@@ -198,12 +198,14 @@ ipcMain.handle('get-system-versions', async () => {
 
 // IPC: Real-time Maintenance & Killswitch Status Checker
 ipcMain.handle('check-maintenance-status', async (_event, customUrl) => {
-  // First check local status.json for local testing
+  // First check local status.json for local/offline fallback
   const localStatusPath = path.join(__dirname, '..', 'status.json');
+  const resStatusPath = path.join(process.resourcesPath, 'status.json');
+  const statusFile = fs.existsSync(localStatusPath) ? localStatusPath : (fs.existsSync(resStatusPath) ? resStatusPath : null);
   let localData = null;
-  if (fs.existsSync(localStatusPath)) {
+  if (statusFile) {
     try {
-      localData = JSON.parse(fs.readFileSync(localStatusPath, 'utf8'));
+      localData = JSON.parse(fs.readFileSync(statusFile, 'utf8'));
     } catch (_) {}
   }
 
