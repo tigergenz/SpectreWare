@@ -14,7 +14,9 @@ import { MaintenanceOverlay } from './components/MaintenanceOverlay';
 import type { DownloadParams, DownloadProgress, DownloadComplete, DownloadError, VideoInfo, MaintenanceStatus } from './types/electron';
 
 export function App() {
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(() => {
+    return new URLSearchParams(window.location.search).get('settings') === 'true';
+  });
 
   // Theme & Lighting state
   const [glowTheme, setGlowTheme] = useState<GlowThemeId>(() => {

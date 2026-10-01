@@ -11,6 +11,46 @@
   </head>
   <body class="bg-[#080a10] text-slate-100 antialiased overflow-hidden select-none">
     <div id="root" class="h-screen w-screen flex flex-col"></div>
+    <script>
+      if (!window.spectreAPI) {
+        window.spectreAPI = {
+          getDefaultDownloadPath: async () => 'C:\\Users\\Tiger\\Downloads\\SpectreWare',
+          getSystemVersions: async () => ({ suite: '1.0.0', ytdlp: '2026.03.01', ffmpeg: '7.1-essentials', electron: '41.7.1' }),
+          checkMaintenanceStatus: async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('maintenance')) {
+              return {
+                maintenance: true,
+                title: 'System Under Maintenance',
+                message: 'SpectreWare core services are currently undergoing scheduled maintenance. Core download extraction services will resume shortly.',
+                estimatedTime: '15-30 minutes',
+                updatedAt: '2026-10-02'
+              };
+            }
+            try {
+              const res = await fetch('https://raw.githubusercontent.com/tigergenz/SpectreWare/main/status.json?_t=' + Date.now());
+              return await res.json();
+            } catch (_) {
+              return { maintenance: false };
+            }
+          },
+          readClipboard: async () => '',
+          minimizeWindow: async () => false,
+          maximizeWindow: async () => false,
+          closeWindow: async () => false,
+          isMaximized: async () => false,
+          selectFolder: async () => 'C:\\Users\\Tiger\\Downloads\\SpectreWare',
+          openFolder: async () => true,
+          openFile: async () => true,
+          fetchVideoInfo: async () => ({ id: 'demo', title: 'Demo Video', thumbnail: '', duration: 180, uploader: 'Demo Channel', viewCount: 10000, webpageUrl: 'https://youtube.com', resolutions: [1080, 720], description: '' }),
+          startDownload: async () => ({ success: true, message: 'Simulated' }),
+          cancelDownload: async () => true,
+          onDownloadProgress: () => () => {},
+          onDownloadComplete: () => () => {},
+          onDownloadError: () => () => {}
+        };
+      }
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
