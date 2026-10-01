@@ -11,7 +11,8 @@ import {
   AlertCircle,
   SlidersHorizontal,
   Search,
-  X
+  X,
+  Link2
 } from 'lucide-react';
 import type { VideoInfo, DownloadParams } from '../types/electron';
 import { formatDuration, formatViews } from '../utils/formatters';
@@ -56,7 +57,7 @@ export const DownloaderTab: React.FC<DownloaderTabProps> = ({
     }
   }, [defaultOutputDir]);
 
-  // Auto-detect clipboard on mount
+  // Auto-detect clipboard on mount and analyze immediately
   useEffect(() => {
     const checkClipboard = async () => {
       try {
@@ -64,12 +65,30 @@ export const DownloaderTab: React.FC<DownloaderTabProps> = ({
           const clipText = await window.spectreAPI.readClipboard();
           if (clipText && clipText.startsWith('http') && !url) {
             setUrl(clipText);
+            handleAnalyze(clipText);
           }
         }
       } catch (_) {}
     };
     checkClipboard();
   }, []);
+
+  // Debounced Auto-Inspect when a valid video URL is pasted or entered
+  useEffect(() => {
+    const trimmed = url.trim();
+    if (!trimmed || loading || (videoInfo && videoInfo.webpageUrl === trimmed)) return;
+
+    if (
+      /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be|tiktok\.com|twitter\.com|x\.com|facebook\.com|instagram\.com|twitch\.tv|bilibili\.com)\/.+$/i.test(
+        trimmed
+      )
+    ) {
+      const timer = setTimeout(() => {
+        handleAnalyze(trimmed);
+      }, 550);
+      return () => clearTimeout(timer);
+    }
+  }, [url, videoInfo, loading]);
 
   const handlePaste = async () => {
     try {
@@ -153,13 +172,11 @@ export const DownloaderTab: React.FC<DownloaderTabProps> = ({
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-4 max-w-3xl mx-auto w-full">
-      {/* Top Search / URL Bar with YouTube Icon */}
+    <div className="flex-1 overflow-y-auto p-4 pb-12 space-y-4 max-w-3xl mx-auto w-full">
+      {/* Top Search / URL Bar */}
       <div className="flex items-center gap-2 p-1.5 rounded-xl bg-[#111116] border border-white/[0.08] focus-within:border-zinc-500 transition-colors shadow-sm">
-        <div className="pl-2.5 text-[#ff2e2e] shrink-0">
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-          </svg>
+        <div className="pl-2.5 text-zinc-400 shrink-0">
+          <Link2 className="w-4 h-4" />
         </div>
 
         <input
@@ -167,7 +184,7 @@ export const DownloaderTab: React.FC<DownloaderTabProps> = ({
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
-          placeholder="Paste YouTube video or Shorts link here..."
+          placeholder="Paste video or audio link (YouTube, Shorts, TikTok, Twitch...)"
           className="flex-1 bg-transparent px-2 py-1 text-xs text-zinc-200 placeholder:text-zinc-500 outline-none font-sans"
         />
 
@@ -412,39 +429,19 @@ export const DownloaderTab: React.FC<DownloaderTabProps> = ({
           </div>
         </div>
       ) : (
-        /* Empty / Compact Hero State with YouTube Icon */
-        <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
-          <div className="w-12 h-12 rounded-xl bg-zinc-900 border border-white/[0.08] flex items-center justify-center shadow-sm">
-            <svg className="w-6 h-6 text-[#ff2e2e]" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-            </svg>
+        /* Clean Minimal Empty State */
+        <div className="flex flex-col items-center justify-center py-20 text-center space-y-3 select-none">
+          <div className="w-10 h-10 rounded-xl bg-zinc-900/80 border border-white/[0.06] flex items-center justify-center text-zinc-400 shadow-sm">
+            <Download className="w-4 h-4 text-zinc-400" />
           </div>
 
-          <div className="space-y-1 max-w-sm">
-            <h2 className="text-xs font-semibold text-zinc-200">
-              YouTube Media Extractor
+          <div className="space-y-1 max-w-xs">
+            <h2 className="text-xs font-medium text-zinc-300">
+              Ready to extract
             </h2>
-            <p className="text-[11px] text-zinc-500 leading-relaxed">
-              Paste any YouTube video or Shorts link above to inspect metadata and select format.
+            <p className="text-[11px] text-zinc-500 leading-relaxed font-sans">
+              Paste a video or audio link to inspect formats and begin downloading.
             </p>
-          </div>
-
-          {/* Compact Feature Badges */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 max-w-md w-full pt-1">
-            {[
-              { title: '4K 60FPS', desc: 'Hardware Mux' },
-              { title: '320kbps MP3', desc: 'Studio Audio' },
-              { title: 'Shorts & VOD', desc: 'All Formats' },
-              { title: 'Local yt-dlp', desc: 'Fast & Private' }
-            ].map((f, i) => (
-              <div
-                key={i}
-                className="p-2 rounded-lg bg-zinc-900/50 border border-white/[0.04] text-center space-y-0.5"
-              >
-                <div className="text-[10px] font-medium text-zinc-300 font-mono">{f.title}</div>
-                <div className="text-[9px] text-zinc-500">{f.desc}</div>
-              </div>
-            ))}
           </div>
         </div>
       )}

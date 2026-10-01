@@ -34,9 +34,8 @@ export const QueueTab: React.FC<QueueTabProps> = ({ tasks, onCancelTask }) => {
       <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
         <div className="flex items-center gap-2 text-xs font-mono text-zinc-300">
           <Activity className="w-3.5 h-3.5 text-zinc-400" />
-          <span>ACTIVE TASKS ({tasks.length})</span>
+          <span>Active Downloads ({tasks.length})</span>
         </div>
-        <span className="text-[10px] font-mono text-zinc-500">LIVE MONITOR</span>
       </div>
 
       <div className="space-y-3">
@@ -128,8 +127,14 @@ export const QueueTab: React.FC<QueueTabProps> = ({ tasks, onCancelTask }) => {
 
                 <div className="h-1.5 w-full rounded-full bg-zinc-950 overflow-hidden border border-white/[0.04]">
                   <div
-                    className="h-full rounded-full bg-white transition-all duration-300"
-                    style={{ width: `${Math.min(Math.max(progress.percent || 0, 1), 100)}%` }}
+                    className={`h-full rounded-full transition-all duration-300 ${
+                      isProcessing
+                        ? 'bg-gradient-to-r from-blue-400 via-sky-200 to-blue-400 animate-pulse'
+                        : 'bg-white'
+                    }`}
+                    style={{
+                      width: isProcessing ? '100%' : `${Math.min(Math.max(progress.percent || 0, 1), 100)}%`
+                    }}
                   />
                 </div>
               </div>

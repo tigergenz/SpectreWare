@@ -2,6 +2,7 @@ const { app, BrowserWindow, ipcMain, dialog, shell, clipboard } = require('elect
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const https = require('https');
 const { spawn, execFile } = require('child_process');
 
 let mainWindow = null;
@@ -161,6 +162,99 @@ ipcMain.handle('read-clipboard', () => {
     return text;
   }
   return '';
+});
+
+// IPC: Get Verified Subsystem Versions
+ipcMain.handle('get-system-versions', async () => {
+  const getVersion = (cmd, args) =>
+    new Promise((resolve) => {
+      execFile(cmd, args, { timeout: 4000 }, (err, stdout) => {
+        if (err || !stdout) resolve('Unknown');
+        else resolve(stdout.trim().split('\n')[0]);
+      });
+    });
+
+  let ytdlpVer = 'Ready';
+  if (fs.existsSync(ytdlpPath)) {
+    const raw = await getVersion(ytdlpPath, ['--version']);
+    ytdlpVer = raw || '2026.x';
+  }
+
+  const ffmpegBin = path.join(ffmpegDir, 'ffmpeg.exe');
+  let ffmpegVer = 'Ready';
+  if (fs.existsSync(ffmpegBin)) {
+    const raw = await getVersion(ffmpegBin, ['-version']);
+    const m = raw.match(/ffmpeg version\s+([^\s]+)/i);
+    ffmpegVer = m ? m[1] : 'GPL 7.x';
+  }
+
+  return {
+    suite: '1.0.0',
+    ytdlp: ytdlpVer,
+    ffmpeg: ffmpegVer,
+    electron: process.versions.electron || '41.x'
+  };
+});
+
+// IPC: Real-time Maintenance & Killswitch Status Checker
+ipcMain.handle('check-maintenance-status', async (_event, customUrl) => {
+  // First check local status.json for local testing
+  const localStatusPath = path.join(__dirname, '..', 'status.json');
+  let localData = null;
+  if (fs.existsSync(localStatusPath)) {
+    try {
+      localData = JSON.parse(fs.readFileSync(localStatusPath, 'utf8'));
+    } catch (_) {}
+  }
+
+  const targetUrl =
+    customUrl ||
+    'https://raw.githubusercontent.com/tigergenz/SpectreWare/main/status.json';
+
+  const urlWithCacheBust = `${targetUrl}?_t=${Date.now()}`;
+
+  return new Promise((resolve) => {
+    const req = https.get(
+      urlWithCacheBust,
+      {
+        headers: {
+          'User-Agent': 'SpectreWare-Desktop/1.0',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          Pragma: 'no-cache'
+        },
+        timeout: 4500
+      },
+      (res) => {
+        if (res.statusCode < 200 || res.statusCode >= 300) {
+          // If remote fails, fallback to local if available
+          return resolve(localData || { maintenance: false, statusCode: res.statusCode });
+        }
+
+        let raw = '';
+        res.on('data', (chunk) => {
+          raw += chunk;
+        });
+        res.on('end', () => {
+          try {
+            const parsed = JSON.parse(raw);
+            resolve(parsed);
+          } catch (_) {
+            resolve(localData || { maintenance: false });
+          }
+        });
+      }
+    );
+
+    req.on('error', () => {
+      // In case of offline, return local status or default false
+      resolve(localData || { maintenance: false, offline: true });
+    });
+
+    req.on('timeout', () => {
+      req.destroy();
+      resolve(localData || { maintenance: false, timeout: true });
+    });
+  });
 });
 
 // IPC: Fetch Video Information

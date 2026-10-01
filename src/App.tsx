@@ -2,11 +2,6 @@ import { useState, useEffect } from 'react';
 import { TitleBar } from './components/TitleBar';
 import { TabsHeader } from './components/TabsHeader';
 import type { TabType } from './components/TabsHeader';
-import { ToolsHub } from './components/ToolsHub';
-import type { ToolId } from './components/ToolsHub';
-import { SplashScreen } from './components/SplashScreen';
-import { WhatsNewModal } from './components/WhatsNewModal';
-import { CURRENT_APP_VERSION } from './data/changelog';
 import { GLOW_THEMES } from './data/themes';
 import type { GlowThemeId } from './data/themes';
 import { DownloaderTab } from './components/DownloaderTab';
@@ -15,13 +10,11 @@ import type { ActiveTask } from './components/QueueTab';
 import { HistoryTab } from './components/HistoryTab';
 import type { HistoryItem } from './components/HistoryTab';
 import { SettingsTab } from './components/SettingsTab';
-import type { SettingsSection } from './components/SettingsTab';
-import type { DownloadParams, DownloadProgress, DownloadComplete, DownloadError, VideoInfo } from './types/electron';
+import { MaintenanceOverlay } from './components/MaintenanceOverlay';
+import type { DownloadParams, DownloadProgress, DownloadComplete, DownloadError, VideoInfo, MaintenanceStatus } from './types/electron';
 
 export function App() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [isWhatsNewOpen, setIsWhatsNewOpen] = useState(false);
-  const [hasUnreadChangelog, setHasUnreadChangelog] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Theme & Lighting state
   const [glowTheme, setGlowTheme] = useState<GlowThemeId>(() => {
@@ -30,11 +23,6 @@ export function App() {
   const [glowIntensity, setGlowIntensity] = useState<'subtle' | 'balanced' | 'vivid' | 'off'>(() => {
     return (localStorage.getItem('spectre_glow_intensity') as any) || 'subtle';
   });
-
-  // Global Navigation: 'hub' | 'media-extractor' | 'settings'
-  const [currentView, setCurrentView] = useState<'hub' | 'media-extractor' | 'settings'>('hub');
-  const [previousView, setPreviousView] = useState<'hub' | 'media-extractor'>('hub');
-  const [settingsSection, setSettingsSection] = useState<SettingsSection>('appearance');
 
   // Tool-specific tab
   const [currentTab, setCurrentTab] = useState<TabType>('downloader');
@@ -67,31 +55,40 @@ export function App() {
 
   const activeGlowTheme = GLOW_THEMES.find((t) => t.id === glowTheme) || GLOW_THEMES[0];
 
-  // Check version on startup
-  useEffect(() => {
-    const lastVersion = localStorage.getItem('spectre_last_version');
-    if (lastVersion !== CURRENT_APP_VERSION) {
-      setHasUnreadChangelog(true);
-    }
-  }, []);
-
-  // Global hotkeys: Ctrl+, (Settings), Esc (Close Settings/Modal)
+  // Hotkeys: Ctrl+, to toggle settings, Esc to close settings
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === ',') {
         e.preventDefault();
-        handleOpenSettings('appearance');
-      } else if (e.key === 'Escape') {
-        if (isWhatsNewOpen) {
-          setIsWhatsNewOpen(false);
-        } else if (currentView === 'settings') {
-          setCurrentView(previousView);
-        }
+        setIsSettingsOpen((prev) => !prev);
+      } else if (e.key === 'Escape' && isSettingsOpen) {
+        setIsSettingsOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentView, previousView, isWhatsNewOpen]);
+  }, [isSettingsOpen]);
+
+  // Real-time Maintenance / Killswitch state
+  const [maintenanceStatus, setMaintenanceStatus] = useState<MaintenanceStatus | null>(null);
+
+  const checkMaintenance = async () => {
+    try {
+      if (window.spectreAPI?.checkMaintenanceStatus) {
+        const res = await window.spectreAPI.checkMaintenanceStatus();
+        setMaintenanceStatus(res);
+      }
+    } catch (err) {
+      console.error('Failed to check maintenance status:', err);
+    }
+  };
+
+  // Poll maintenance mode on startup and periodically (every 30s)
+  useEffect(() => {
+    checkMaintenance();
+    const timer = setInterval(checkMaintenance, 30000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Load default output directory from Electron on startup
   useEffect(() => {
@@ -152,7 +149,6 @@ export function App() {
             return updated;
           });
 
-          // Optional auto-open folder
           if (autoOpenFolderOnComplete) {
             window.spectreAPI?.openFolder?.(data.outputDir);
           }
@@ -173,20 +169,6 @@ export function App() {
     };
   }, [autoOpenFolderOnComplete]);
 
-  const handleFinishSplash = () => {
-    setIsLoading(false);
-    const lastVersion = localStorage.getItem('spectre_last_version');
-    if (lastVersion !== CURRENT_APP_VERSION) {
-      setIsWhatsNewOpen(true);
-    }
-  };
-
-  const handleCloseWhatsNew = () => {
-    setIsWhatsNewOpen(false);
-    setHasUnreadChangelog(false);
-    localStorage.setItem('spectre_last_version', CURRENT_APP_VERSION);
-  };
-
   // Trigger download action
   const handleStartDownload = async (params: DownloadParams, info: VideoInfo) => {
     const newTask: ActiveTask = {
@@ -204,7 +186,7 @@ export function App() {
     };
 
     setActiveTasks((prev) => [newTask, ...prev]);
-    setCurrentTab('queue'); // Auto-switch to live queue tab
+    setCurrentTab('queue');
 
     try {
       if (window.spectreAPI?.startDownload) {
@@ -255,147 +237,82 @@ export function App() {
     });
   };
 
-  const handleToggleAutoClipboard = (val: boolean) => {
-    setAutoClipboard(val);
-    localStorage.setItem('spectre_auto_clip', String(val));
-  };
-
-  const handleChangePreferredQuality = (val: string) => {
-    setPreferredQuality(val);
-    localStorage.setItem('spectre_pref_quality', val);
-  };
-
-  const handleChangePreferredAudioBitrate = (val: string) => {
-    setPreferredAudioBitrate(val);
-    localStorage.setItem('spectre_pref_audio_bitrate', val);
-  };
-
-  const handleToggleAutoOpenFolder = (val: boolean) => {
-    setAutoOpenFolderOnComplete(val);
-    localStorage.setItem('spectre_auto_open_folder', String(val));
-  };
-
-  const handleToggleEmbedThumbnails = (val: boolean) => {
-    setEmbedThumbnails(val);
-    localStorage.setItem('spectre_embed_thumbnails', String(val));
-  };
-
-  const handleChangeGlowTheme = (themeId: GlowThemeId) => {
-    setGlowTheme(themeId);
-    localStorage.setItem('spectre_glow_theme', themeId);
-  };
-
-  const handleChangeGlowIntensity = (intensity: 'subtle' | 'balanced' | 'vivid' | 'off') => {
-    setGlowIntensity(intensity);
-    localStorage.setItem('spectre_glow_intensity', intensity);
-  };
-
-  const handleSelectTool = (toolId: ToolId) => {
-    if (toolId === 'media-extractor') {
-      setCurrentView('media-extractor');
-      setCurrentTab('downloader');
-    }
-  };
-
-  const handleGoToHub = () => {
-    setCurrentView('hub');
-  };
-
-  const handleOpenSettings = (section: SettingsSection = 'appearance') => {
-    if (currentView === 'settings' && settingsSection === section) {
-      setCurrentView(previousView);
-    } else {
-      if (currentView !== 'settings') {
-        setPreviousView(currentView);
-      }
-      setSettingsSection(section);
-      setCurrentView('settings');
-    }
-  };
-
   return (
     <div className="h-screen w-screen flex flex-col bg-[#06080e] text-zinc-100 overflow-hidden font-sans border border-white/[0.08]">
-      {/* Minimal Splash Loading Overlay on Startup with Dynamic Glow */}
-      {isLoading && (
-        <SplashScreen onFinish={handleFinishSplash} glowTheme={glowTheme} />
-      )}
-
-      {/* What's New / Release Notes Modal */}
-      <WhatsNewModal isOpen={isWhatsNewOpen} onClose={handleCloseWhatsNew} />
-
-      {/* Frameless Top Bar */}
+      {/* Top Title Bar */}
       <TitleBar
         onOpenFolder={handleOpenFolder}
         activeCount={activeTasks.length}
-        onGoToHub={handleGoToHub}
-        currentToolTitle={
-          currentView === 'media-extractor'
-            ? 'Media Extractor'
-            : currentView === 'settings'
-            ? 'Settings'
-            : undefined
-        }
-        onOpenWhatsNew={() => setIsWhatsNewOpen(true)}
-        hasUnreadChangelog={hasUnreadChangelog}
-        onOpenSettings={() => handleOpenSettings('appearance')}
-        isSettingsOpen={currentView === 'settings'}
+        onOpenSettings={() => setIsSettingsOpen(!isSettingsOpen)}
+        isSettingsOpen={isSettingsOpen}
       />
 
-      {/* When inside Media Extractor, render its tool-specific tabs */}
-      {currentView === 'media-extractor' && (
+      {/* Segmented Navigation (Clean tabs, hidden when in preferences) */}
+      {!isSettingsOpen && (
         <TabsHeader
           currentTab={currentTab}
           onTabChange={setCurrentTab}
           queueCount={activeTasks.length}
           historyCount={historyItems.length}
-          onBackToHub={handleGoToHub}
-          onOpenSettings={() => handleOpenSettings('extractor')}
         />
       )}
 
       {/* Main View Area with Dynamic Ambient Glow */}
       <main className="flex-1 flex flex-col min-h-0 bg-[#06080e] relative overflow-hidden">
-        {/* Dynamic Ambient Glow Layer */}
+        {/* Subtle Ambient Glow */}
         {glowIntensity !== 'off' && (
           <div
-            className="absolute top-0 left-1/2 -translate-x-1/2 w-[740px] h-[450px] pointer-events-none -z-0 transition-all duration-500 ease-in-out"
+            className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[360px] pointer-events-none -z-0 transition-all duration-500 ease-in-out"
             style={{
               background: `radial-gradient(ellipse at center, ${activeGlowTheme.rgbaCenter} 0%, ${activeGlowTheme.rgbaEdge} 60%, transparent 80%)`,
-              filter: glowIntensity === 'vivid' ? 'blur(60px)' : glowIntensity === 'balanced' ? 'blur(52px)' : 'blur(45px)',
-              opacity: glowIntensity === 'vivid' ? 2.2 : glowIntensity === 'balanced' ? 1.6 : 1.0,
+              filter: glowIntensity === 'vivid' ? 'blur(56px)' : glowIntensity === 'balanced' ? 'blur(48px)' : 'blur(40px)',
+              opacity: glowIntensity === 'vivid' ? 1.8 : glowIntensity === 'balanced' ? 1.2 : 0.8,
             }}
           />
         )}
 
-        {currentView === 'settings' ? (
+        {isSettingsOpen ? (
           <SettingsTab
-            onBack={() => setCurrentView(previousView)}
-            backLabel={previousView === 'hub' ? 'Back to Hub' : 'Back to Extractor'}
-            initialSection={settingsSection}
+            onBack={() => setIsSettingsOpen(false)}
+            backLabel="Back to Extractor"
             defaultOutputDir={defaultOutputDir}
             onSelectOutputDir={handleSelectOutputDir}
             onOpenFolder={handleOpenFolder}
             autoClipboard={autoClipboard}
-            onToggleAutoClipboard={handleToggleAutoClipboard}
+            onToggleAutoClipboard={(v) => {
+              setAutoClipboard(v);
+              localStorage.setItem('spectre_auto_clip', String(v));
+            }}
             preferredQuality={preferredQuality}
-            onChangePreferredQuality={handleChangePreferredQuality}
+            onChangePreferredQuality={(v) => {
+              setPreferredQuality(v);
+              localStorage.setItem('spectre_pref_quality', v);
+            }}
             preferredAudioBitrate={preferredAudioBitrate}
-            onChangePreferredAudioBitrate={handleChangePreferredAudioBitrate}
+            onChangePreferredAudioBitrate={(v) => {
+              setPreferredAudioBitrate(v);
+              localStorage.setItem('spectre_pref_audio_bitrate', v);
+            }}
             autoOpenFolderOnComplete={autoOpenFolderOnComplete}
-            onToggleAutoOpenFolder={handleToggleAutoOpenFolder}
+            onToggleAutoOpenFolder={(v) => {
+              setAutoOpenFolderOnComplete(v);
+              localStorage.setItem('spectre_auto_open_folder', String(v));
+            }}
             embedThumbnails={embedThumbnails}
-            onToggleEmbedThumbnails={handleToggleEmbedThumbnails}
+            onToggleEmbedThumbnails={(v) => {
+              setEmbedThumbnails(v);
+              localStorage.setItem('spectre_embed_thumbnails', String(v));
+            }}
             glowTheme={glowTheme}
-            onChangeGlowTheme={handleChangeGlowTheme}
+            onChangeGlowTheme={(t) => {
+              setGlowTheme(t);
+              localStorage.setItem('spectre_glow_theme', t);
+            }}
             glowIntensity={glowIntensity}
-            onChangeGlowIntensity={handleChangeGlowIntensity}
-            onOpenWhatsNew={() => setIsWhatsNewOpen(true)}
-          />
-        ) : currentView === 'hub' ? (
-          <ToolsHub
-            onSelectTool={handleSelectTool}
-            activeDownloadsCount={activeTasks.length}
-            onOpenSettings={() => handleOpenSettings('appearance')}
+            onChangeGlowIntensity={(i) => {
+              setGlowIntensity(i);
+              localStorage.setItem('spectre_glow_intensity', i);
+            }}
           />
         ) : (
           <>
@@ -425,6 +342,11 @@ export function App() {
           </>
         )}
       </main>
+      
+      {/* Real-time Maintenance Mode Overlay */}
+      {maintenanceStatus?.maintenance && (
+        <MaintenanceOverlay status={maintenanceStatus} onRefresh={checkMaintenance} />
+      )}
     </div>
   );
 }

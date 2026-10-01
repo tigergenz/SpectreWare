@@ -26,6 +26,8 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({
   onDeleteItem
 }) => {
   const [search, setSearch] = useState('');
+  const [confirmClear, setConfirmClear] = useState(false);
+  const [missingFileId, setMissingFileId] = useState<string | null>(null);
 
   const filtered = items.filter(
     (item) =>
@@ -33,12 +35,28 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({
       item.uploader.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleOpenFile = (filePath: string) => {
-    window.spectreAPI?.openFile?.(filePath);
+  const handleOpenFile = async (item: HistoryItem) => {
+    if (window.spectreAPI?.openFile) {
+      const opened = await window.spectreAPI.openFile(item.filePath);
+      if (!opened) {
+        setMissingFileId(item.id);
+        setTimeout(() => setMissingFileId(null), 3500);
+      }
+    }
   };
 
   const handleOpenFolder = (dirPath: string) => {
     window.spectreAPI?.openFolder?.(dirPath);
+  };
+
+  const handleClearWithConfirm = () => {
+    if (!confirmClear) {
+      setConfirmClear(true);
+      setTimeout(() => setConfirmClear(false), 4000);
+    } else {
+      onClearHistory();
+      setConfirmClear(false);
+    }
   };
 
   if (items.length === 0) {
@@ -71,11 +89,16 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({
         </div>
 
         <button
-          onClick={onClearHistory}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 transition-colors"
+          onClick={handleClearWithConfirm}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs transition-colors ${
+            confirmClear
+              ? 'text-rose-400 bg-rose-950/60 border border-rose-800/80 font-medium'
+              : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800'
+          }`}
+          title={confirmClear ? "Click again to confirm deleting all history" : "Clear History"}
         >
           <Trash2 className="w-3.5 h-3.5" />
-          <span>Clear History</span>
+          <span>{confirmClear ? 'Confirm Delete All?' : 'Clear History'}</span>
         </button>
       </div>
 
@@ -109,31 +132,39 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-1.5 shrink-0">
-              <button
-                onClick={() => handleOpenFile(item.filePath)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium transition-all"
-                title="Play Media"
-              >
-                <Play className="w-3 h-3 fill-zinc-200 text-zinc-200" />
-                <span>Play</span>
-              </button>
+            <div className="flex flex-col items-end gap-1 shrink-0">
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => handleOpenFile(item)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium transition-all"
+                  title="Play Media"
+                >
+                  <Play className="w-3 h-3 fill-zinc-200 text-zinc-200" />
+                  <span>Play</span>
+                </button>
 
-              <button
-                onClick={() => handleOpenFolder(item.outputDir)}
-                className="p-1.5 rounded-md text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
-                title="Show in Folder"
-              >
-                <Folder className="w-3.5 h-3.5" />
-              </button>
+                <button
+                  onClick={() => handleOpenFolder(item.outputDir)}
+                  className="p-1.5 rounded-md text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+                  title="Show in Folder"
+                >
+                  <Folder className="w-3.5 h-3.5" />
+                </button>
 
-              <button
-                onClick={() => onDeleteItem(item.id)}
-                className="p-1.5 rounded-md text-zinc-500 hover:text-rose-400 hover:bg-zinc-800 transition-colors"
-                title="Remove from List"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
+                <button
+                  onClick={() => onDeleteItem(item.id)}
+                  className="p-1.5 rounded-md text-zinc-500 hover:text-rose-400 hover:bg-zinc-800 transition-colors"
+                  title="Remove from List"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {missingFileId === item.id && (
+                <span className="text-[10px] text-rose-400 font-mono animate-in fade-in">
+                  File moved or deleted
+                </span>
+              )}
             </div>
           </div>
         ))}

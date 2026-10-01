@@ -13,6 +13,8 @@ contextBridge.exposeInMainWorld('spectreAPI', {
   openFolder: (dirPath) => ipcRenderer.invoke('open-folder', dirPath),
   openFile: (filePath) => ipcRenderer.invoke('open-file', filePath),
   readClipboard: () => ipcRenderer.invoke('read-clipboard'),
+  getSystemVersions: () => ipcRenderer.invoke('get-system-versions'),
+  checkMaintenanceStatus: (customUrl) => ipcRenderer.invoke('check-maintenance-status', customUrl),
 
   // yt-dlp Video / Audio Operations
   fetchVideoInfo: (url) => ipcRenderer.invoke('fetch-info', url),

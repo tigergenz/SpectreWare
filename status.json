@@ -1,0 +1,8 @@
+{
+  "maintenance": false,
+  "title": "System Under Maintenance",
+  "message": "SpectreWare is currently undergoing scheduled improvements. Core services will resume shortly.",
+  "estimatedTime": "15-30 minutes",
+  "minVersion": "1.0.0",
+  "updatedAt": "2026-10-02"
+}

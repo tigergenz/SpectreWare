@@ -43,6 +43,16 @@ export interface DownloadError {
   message: string;
 }
 
+export interface MaintenanceStatus {
+  maintenance: boolean;
+  title?: string;
+  message?: string;
+  estimatedTime?: string;
+  minVersion?: string;
+  updatedAt?: string;
+  offline?: boolean;
+}
+
 export interface SpectreAPI {
   minimizeWindow: () => Promise<boolean>;
   maximizeWindow: () => Promise<boolean>;
@@ -54,6 +64,8 @@ export interface SpectreAPI {
   openFolder: (dirPath?: string) => Promise<boolean>;
   openFile: (filePath: string) => Promise<boolean>;
   readClipboard: () => Promise<string>;
+  getSystemVersions: () => Promise<{ suite: string; ytdlp: string; ffmpeg: string; electron: string }>;
+  checkMaintenanceStatus: (customUrl?: string) => Promise<MaintenanceStatus>;
 
   fetchVideoInfo: (url: string) => Promise<VideoInfo>;
   startDownload: (params: DownloadParams) => Promise<{ success: boolean; message: string }>;

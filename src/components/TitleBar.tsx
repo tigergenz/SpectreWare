@@ -1,13 +1,9 @@
-import { useState, useEffect } from 'react';
-import { Minus, Square, Copy, X, Folder, Ghost, LayoutGrid, Sparkles, Settings } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Minus, Square, Copy, X, Folder, Settings } from 'lucide-react';
 
 interface TitleBarProps {
   onOpenFolder?: () => void;
   activeCount?: number;
-  onGoToHub?: () => void;
-  currentToolTitle?: string;
-  onOpenWhatsNew?: () => void;
-  hasUnreadChangelog?: boolean;
   onOpenSettings?: () => void;
   isSettingsOpen?: boolean;
 }
@@ -15,10 +11,6 @@ interface TitleBarProps {
 export const TitleBar: React.FC<TitleBarProps> = ({
   onOpenFolder,
   activeCount = 0,
-  onGoToHub,
-  currentToolTitle,
-  onOpenWhatsNew,
-  hasUnreadChangelog = false,
   onOpenSettings,
   isSettingsOpen = false
 }) => {
@@ -46,86 +38,29 @@ export const TitleBar: React.FC<TitleBarProps> = ({
   };
 
   return (
-    <div className="h-10 w-full bg-[#0a0a0d] border-b border-white/[0.06] flex items-center justify-between px-3.5 drag-region z-40 select-none">
+    <div className="h-9 w-full bg-[#08090d] border-b border-white/[0.06] flex items-center justify-between px-3 drag-region z-40 select-none">
       {/* Brand & Logo */}
-      <div className="flex items-center gap-2.5">
-        <button
-          onClick={onGoToHub}
-          className="flex items-center gap-2.5 no-drag hover:opacity-80 transition-opacity"
-          title="Go to Tools Hub"
-        >
-          <div className="flex items-center justify-center w-5 h-5 rounded bg-zinc-900 border border-white/[0.08]">
-            <Ghost className="w-3 h-3 text-zinc-300" />
-          </div>
-          <div className="flex items-center gap-1.5 font-mono">
-            <span className="text-xs font-semibold tracking-wider text-zinc-200 uppercase">
-              SpectreWare
-            </span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-900 text-zinc-400 border border-white/[0.06]">
-              1.0
-            </span>
-          </div>
-        </button>
-
-        {currentToolTitle && (
-          <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-zinc-500 pl-1 border-l border-white/[0.08]">
-            <span>/</span>
-            <span className="text-zinc-400">{currentToolTitle}</span>
-          </div>
-        )}
+      <div className="flex items-center gap-1.5 font-sans pl-0.5">
+        <span className="text-xs font-semibold tracking-tight text-zinc-200">
+          SpectreWare
+        </span>
+        <span className="text-[10px] text-zinc-500 font-mono">
+          1.0
+        </span>
       </div>
 
       {/* Middle Active Indicator */}
-      <div className="hidden md:flex items-center gap-2 text-xs font-mono">
-        {activeCount > 0 ? (
-          <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-zinc-900 border border-white/[0.1] text-zinc-300">
-            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-            <span className="text-[11px]">Tasks Active ({activeCount})</span>
+      <div className="hidden md:flex items-center">
+        {activeCount > 0 && (
+          <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-zinc-900 border border-white/[0.08] text-zinc-300 text-xs font-mono">
+            <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" />
+            <span className="text-[11px]">{activeCount} active</span>
           </div>
-        ) : (
-          <span className="text-[11px] text-zinc-500">Core Subsystems Operational</span>
         )}
       </div>
 
       {/* Window Controls */}
       <div className="flex items-center gap-0.5 no-drag">
-        {onOpenWhatsNew && (
-          <button
-            onClick={onOpenWhatsNew}
-            title="What's New / Release Notes"
-            className="relative p-1.5 rounded text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60 transition-colors"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            {hasUnreadChangelog && (
-              <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-            )}
-          </button>
-        )}
-
-        {onGoToHub && (
-          <button
-            onClick={onGoToHub}
-            title="Tools Hub"
-            className="p-1.5 rounded text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60 transition-colors"
-          >
-            <LayoutGrid className="w-3.5 h-3.5" />
-          </button>
-        )}
-
-        {onOpenSettings && (
-          <button
-            onClick={onOpenSettings}
-            title="System Settings"
-            className={`p-1.5 rounded transition-colors ${
-              isSettingsOpen
-                ? 'text-white bg-zinc-800 border border-white/[0.08]'
-                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60'
-            }`}
-          >
-            <Settings className="w-3.5 h-3.5" />
-          </button>
-        )}
-
         {onOpenFolder && (
           <button
             onClick={onOpenFolder}
@@ -133,6 +68,20 @@ export const TitleBar: React.FC<TitleBarProps> = ({
             className="p-1.5 rounded text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60 transition-colors"
           >
             <Folder className="w-3.5 h-3.5" />
+          </button>
+        )}
+
+        {onOpenSettings && (
+          <button
+            onClick={onOpenSettings}
+            title="Preferences (Ctrl+,)"
+            className={`p-1.5 rounded transition-colors ${
+              isSettingsOpen
+                ? 'text-white bg-zinc-800 border border-white/[0.08]'
+                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60'
+            }`}
+          >
+            <Settings className="w-3.5 h-3.5" />
           </button>
         )}
 
