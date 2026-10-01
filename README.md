@@ -1,54 +1,61 @@
-# 👻 SPECTREWARE 1.0
-### Advanced Cyber-Dark Media Extractor & Roblox UI Library
+# 👻 SPECTREWARE
+### Multi-Tool Obsidian Suite & Roblox Luau UI Library
 
 ---
 
-## ⚡ Overview
-**SpectreWare 1.0** is an ultra-fast, premium desktop application engineered for high-definition video extraction and lossless audio conversion from YouTube, Shorts, TikTok, Twitch, and more. Built with a futuristic Ghost Spectre dark-mode design (`#06080e`), glassmorphism telemetry, and direct hardware-accelerated muxing.
+## 📂 Project Organization
 
-It also bundles **SpectreWareUI**, a complete Roblox Luau UI library with identical obsidian-dark aesthetics and ambient aura lighting for game automation & script execution.
+This repository is strictly organized into two distinct sections:
+
+```
+SpectreWare/
+│
+├── 🎮 roblox/                   # ── Roblox Luau UI Library ──
+│   ├── SpectreWareUI.lua       # Core standalone Luau UI library
+│   ├── Example_AutoFarm.lua    # Runnable Auto-Farm example (Loads via HttpGet)
+│   └── README.md               # Dedicated documentation for Roblox scripters
+│
+├── 🖥️ Desktop Application        # ── SpectreWare 1.0 Desktop Suite ──
+│   ├── electron/               # Electron backend (IPC, yt-dlp, FFmpeg muxer)
+│   ├── src/                    # React 19 + TypeScript + Tailwind UI
+│   ├── run.bat                 # 1-Click launcher for Windows
+│   └── package.json            # Node/Vite dependencies
+│
+└── 📄 Root Helpers
+    ├── SpectreWareUI.lua       # Root alias loader (Redirects to /roblox/)
+    └── Example_AutoFarm.lua    # Root alias example script
+```
 
 ---
 
-## 🚀 Key Features
+## 🎮 1. SpectreWareUI • Roblox Luau Library
 
-* **High-Definition Video Extraction:** Support for **4K Ultra HD (2160p)**, **1440p (2K)**, **1080p 60FPS**, **720p HD**, and standard resolutions.
-* **Lossless Audio Extraction:** Extract direct audio streams converted into **320 kbps Studio Quality MP3** or **Apple AAC (M4A)** with full ID3 metadata & embedded cover art.
-* **Ambient Accent Aura:** Calibrated multi-color glow system (Cobalt Sapphire, Glacier Cyan, Obsidian Violet, Tactical Emerald, Crimson Rose, Solar Amber, Obsidian Stealth).
-* **Master System Preferences:** Global suite settings, storage path selector, and clipboard auto-detection.
-* **Real-Time Telemetry:** Live download progress bar, network throughput speed meter (`MB/s`), remaining time ETA, and dynamic FFmpeg stream-merging status.
-* **Custom Frameless Titlebar:** Windows 11 style draggable glass titlebar with taskbar progress and minimize, maximize/restore, and close buttons.
+A high-performance, dark obsidian (`#06080e`) UI framework tailored for Roblox script execution (Auto Farm, Hubs, Utility scripts).
 
----
-
-## 🎮 SpectreWareUI • Roblox Luau Library
-
-SpectreWareUI is included in this repository as a standalone, zero-dependency Luau library for Roblox executors (CoreGui / `gethui()` safe):
-
-### 📥 Instant Loadstring
+* **Direct Cloud Loadstring:**
 ```lua
-local SpectreWareUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/tigergenz/SpectreWare/main/SpectreWareUI.lua"))()
+local SpectreWareUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/tigergenz/SpectreWare/main/roblox/SpectreWareUI.lua"))()
 
 local Window = SpectreWareUI:CreateWindow({
     Title = "SpectreWare",
-    SubTitle = "Suite v1.0",
+    SubTitle = "Auto-Farm Suite v1.0",
     Theme = "Cobalt", -- "Cobalt" | "Glacier" | "Violet" | "Emerald"
     ToggleKey = Enum.KeyCode.RightControl
 })
 
 local MainTab = Window:CreateTab("Auto Farm")
-MainTab:CreateSection("Combat")
+MainTab:CreateSection("Combat Automation")
 
 MainTab:CreateToggle({
     Name = "Auto Attack Mobs",
     Default = false,
     Callback = function(enabled)
-        print("Auto Farm Active:", enabled)
+        print("Auto Farm status:", enabled)
     end
 })
 
 MainTab:CreateSlider({
-    Name = "Attack Speed",
+    Name = "Hits Per Second",
     Min = 5,
     Max = 30,
     Default = 15,
@@ -58,42 +65,36 @@ MainTab:CreateSlider({
 })
 
 MainTab:CreateDropdown({
-    Name = "Target Mob",
-    Options = { "Zombie Lv.1", "Skeleton Boss", "Bandit" },
+    Name = "Select Monster Target",
+    Options = { "Zombie Lv.1", "Skeleton Boss", "Bandit Rogue" },
     Default = "Zombie Lv.1",
     Callback = function(selected)
-        print("Target:", selected)
+        print("Selected:", selected)
     end
 })
 ```
 
-See [`Example_AutoFarm.lua`](Example_AutoFarm.lua) for a full runnable example.
+For complete documentation, element callbacks, and theme presets, see [**`roblox/README.md`**](roblox/README.md).
 
 ---
 
-## 🛠️ Desktop Suite Architecture
+## 🖥️ 2. SpectreWare 1.0 • Desktop Application
 
-| Component | Technology |
-|---|---|
-| **App Shell** | Electron 41 (Frameless Native Window, IPC Isolation) |
-| **Frontend Framework** | React 19 + TypeScript + Vite |
-| **UI & Styling** | Tailwind CSS + Lucide Icons + Obsidian Matte Dark |
-| **Download Engine** | `yt-dlp` (Standalone Binary) |
-| **Media Muxer & Transcoder** | `FFmpeg` (GPL Build with AAC/MP3 Encoders) |
+An ultra-fast, premium desktop application engineered for high-definition media extraction and lossless audio conversion from YouTube, Shorts, TikTok, Twitch, and more.
 
----
+### 🚀 Desktop Features
+* **4K 60FPS Video Extraction:** Hardware-level FFmpeg muxing for UHD 2160p, QHD 1440p, FHD 1080p.
+* **Lossless Audio Extraction:** Direct 320 kbps Studio MP3 or Apple M4A with embedded high-resolution ID3 cover art.
+* **Ambient Accent Aura:** Calibrated 7-hue background lighting system matching user preferences.
+* **Global System Preferences:** Unified master settings, auto-clipboard detection, and native Windows taskbar progress bar.
 
-## 📦 How to Run Desktop App
-
-### Method 1: Instant Launch (Double Click)
-Double-click `run.bat` in the project folder.
-
-### Method 2: Command Line
-```powershell
-npm start
-```
-
-### Method 3: Development Mode (Hot-Reload)
-```powershell
-npm run app
-```
+### 📦 How to Launch Desktop App
+- **Method 1 (Instant):** Double-click `run.bat` in the project root.
+- **Method 2 (Command Line):**
+  ```powershell
+  npm start
+  ```
+- **Method 3 (Dev Mode with Hot-Reload):**
+  ```powershell
+  npm run app
+  ```

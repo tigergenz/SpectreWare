@@ -1,11 +1,11 @@
 --[[
     ══════════════════════════════════════════════════════════════════
-    SpectreWareUI • Example Auto Farm Script
-    Demonstrates usage with Toggles, Sliders, Dropdowns & Sections
+    SpectreWareUI • Example Auto Farm Script (Online Loader)
+    Loads SpectreWareUI directly from GitHub via HttpGet
     ══════════════════════════════════════════════════════════════════
 --]]
 
--- Direct Cloud Loader from GitHub Raw URL
+-- Direct Cloud Loader from GitHub
 local SpectreWareUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/tigergenz/SpectreWare/main/roblox/SpectreWareUI.lua"))()
 
 -- 1. Create Main Window
