@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+  
+  body {
+    @apply bg-[#09090c] text-zinc-100 select-none overflow-hidden m-0 p-0 font-sans;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* Custom Window Drag Region for Electron */
+.drag-region {
+  -webkit-app-region: drag;
+}
+
+.no-drag {
+  -webkit-app-region: no-drag;
+}
+
+/* Minimalist Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* Luxury Matte Surface Cards */
+.card-matte {
+  background: #111116;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.card-matte-hover {
+  transition: all 0.18s ease-in-out;
+}
+.card-matte-hover:hover {
+  background: #15151c;
+  border-color: rgba(255, 255, 255, 0.14);
+}
