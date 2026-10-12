@@ -1,6 +1,6 @@
 --[[
-    SPECTREWARE — UNIVERSAL LOADER
-    Automation & Script Suite by SpectreWare x clack
+    setclipboard(string.format('Places = { %s },\nGames  = { %s },', tostring(game.PlaceId), tostring(game.GameId)))
+    print("Copied to clipboard!")
 ]]
 
 -- Safe Global Resolution (Immune to VM Obfuscator sandbox & Real Executor isolation)
@@ -75,6 +75,11 @@ local SupportedGames = {
         Places = { 99521272836282 },
         Games  = { 9551044479 },
         Url    = "https://raw.githubusercontent.com/tigergenz/SpectreMain/refs/heads/main/FinalSwarm.lua",
+    },
+    ["Tower Incremental"] = {
+        Places = { 75766778174856 },
+        Games  = { 10765067592 },
+        Url    = "https://raw.githubusercontent.com/tigergenz/SpectreMain/refs/heads/main/TOWER.lua",
     },
 }
 
