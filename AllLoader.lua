@@ -72,19 +72,28 @@ local SupportedGames = {
         Url    = "https://raw.githubusercontent.com/SpectreWareZ/SpectreWare/refs/heads/main/Games/NeverTown.lua",
     },
     ["Final Swarm"] = {
-        Places = { 99521272836282 },
-        Games  = { 9551044479 },
-        Url    = "https://raw.githubusercontent.com/tigergenz/SpectreMain/refs/heads/main/FinalSwarm.lua",
+        Places   = { 99521272836282, 79787558257549, 797875825749 },
+        Games    = { 9551044479 },
+        Patterns = { "final swarm", "swarm" },
+        Url      = "https://raw.githubusercontent.com/tigergenz/SpectreMain/refs/heads/main/FinalSwarm.lua",
     },
     ["Tower Incremental"] = {
-        Places = { 75766778174856 },
-        Games  = { 10765067592 },
-        Url    = "https://raw.githubusercontent.com/tigergenz/SpectreMain/refs/heads/main/TOWER.lua",
+        Places   = { 75766778174856 },
+        Games    = { 10765067592 },
+        Patterns = { "tower incremental" },
+        Url      = "https://raw.githubusercontent.com/tigergenz/SpectreMain/refs/heads/main/TOWER.lua",
     },
     ["Run A Restaurant"] = {
-       Places = { 77843161404023 },
-       Games  = { 9970645639 },
-        Url    = "https://raw.githubusercontent.com/tigergenz/SpectreMain/refs/heads/main/RunARes.lua",
+        Places   = { 77843161404023 },
+        Games    = { 9970645639 },
+        Patterns = { "run a restaurant", "restaurant" },
+        Url      = "https://raw.githubusercontent.com/tigergenz/SpectreMain/refs/heads/main/RunARes.lua",
+    },
+    ["Jump For Animals"] = {
+        Places = { 126870639873289 },
+        Games  = { 10690360998 },
+        Patterns = { "jump for animals" },
+        Url      = "https://raw.githubusercontent.com/tigergenz/SpectreMain/refs/heads/main/JFA.lua",
     },
 }
 
@@ -111,6 +120,17 @@ for gameName, config in pairs(SupportedGames) do
     if not isMatch and config.Games then
         for _, id in ipairs(config.Games) do
             if id == currentGameId then
+                isMatch = true
+                break
+            end
+        end
+    end
+
+    -- ตรวจสอบ Name Fallback (กรณีข้ามแมพย่อย/Raid หรือ PlaceId เปลี่ยน)
+    if not isMatch and config.Patterns then
+        local lowerName = string.lower(game.Name or "")
+        for _, pattern in ipairs(config.Patterns) do
+            if lowerName:find(pattern, 1, true) then
                 isMatch = true
                 break
             end
