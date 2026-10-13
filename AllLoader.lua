@@ -82,8 +82,8 @@ local SupportedGames = {
         Url    = "https://raw.githubusercontent.com/tigergenz/SpectreMain/refs/heads/main/TOWER.lua",
     },
     ["Run A Restaurant"] = {
-        Places = { 75766778174856 },
-        Games  = { 10765067592 },
+       Places = { 77843161404023 },
+       Games  = { 9970645639 },
         Url    = "https://raw.githubusercontent.com/tigergenz/SpectreMain/refs/heads/main/RunARes.lua",
     },
 }
