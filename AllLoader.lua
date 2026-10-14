@@ -101,6 +101,12 @@ local SupportedGames = {
         Patterns = { "Build An Ant Empire" },
         Url      = "https://raw.githubusercontent.com/tigergenz/SpectreMain/refs/heads/main/BAAE.lua",
     },
+    ["Mog Evolution"] = {
+        Places = { 92648272637932 },
+        Games  = { 10764479526 },
+        Patterns = { "mog evolution", "+1 mog evolution", "mog" },
+        Url      = "https://raw.githubusercontent.com/tigergenz/SpectreMain/refs/heads/main/Mog.lua",
+    },
 }
 
 -- =========================================================================
