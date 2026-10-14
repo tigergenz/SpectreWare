@@ -95,6 +95,12 @@ local SupportedGames = {
         Patterns = { "jump for animals" },
         Url      = "https://raw.githubusercontent.com/tigergenz/SpectreMain/refs/heads/main/JFA.lua",
     },
+    ["Build An Ant Empire"] = {
+        Places = { 78490532994307 },
+        Games  = { 10436530264 },
+        Patterns = { "Build An Ant Empire" },
+        Url      = "https://raw.githubusercontent.com/tigergenz/SpectreMain/refs/heads/main/BAAE.lua",
+    },
 }
 
 -- =========================================================================
