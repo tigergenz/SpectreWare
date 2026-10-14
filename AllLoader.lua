@@ -86,7 +86,7 @@ local SupportedGames = {
     ["Run A Restaurant"] = {
         Places   = { 77843161404023 },
         Games    = { 9970645639 },
-        Patterns = { "run a restaurant", "restaurant" },
+        Patterns = { "run a restaurant" },
         Url      = "https://raw.githubusercontent.com/tigergenz/SpectreMain/refs/heads/main/RunARes.lua",
     },
     ["Jump For Animals"] = {
@@ -106,6 +106,12 @@ local SupportedGames = {
         Games  = { 10764479526 },
         Patterns = { "mog evolution", "+1 mog evolution", "mog" },
         Url      = "https://raw.githubusercontent.com/tigergenz/SpectreMain/refs/heads/main/Mog.lua",
+    },
+    ["Restaurant Tycoon 3"] = {
+        Places   = { 119048529960596, 99889627739043 },
+        Games    = { 7094518649 },
+        Patterns = { "restaurant tycoon 3", "restaurant tycoon", "rt3" },
+        Url      = "https://raw.githubusercontent.com/tigergenz/SpectreMain/refs/heads/main/RTA3.lua
     },
 }
 
