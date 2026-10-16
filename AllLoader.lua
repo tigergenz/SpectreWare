@@ -111,8 +111,21 @@ local SupportedGames = {
         Places   = { 119048529960596, 99889627739043 },
         Games    = { 7094518649 },
         Patterns = { "restaurant tycoon 3", "restaurant tycoon", "rt3" },
-        Url      = "https://raw.githubusercontent.com/tigergenz/SpectreMain/refs/heads/main/RTA3.lua
+        Url      = "https://raw.githubusercontent.com/tigergenz/SpectreMain/refs/heads/main/RTA3.lua",
     },
+    ["Violence District"] = {
+        Places   = { 93978595733734 },
+        Games    = { 6739698191 },
+        Patterns = { "violence district", "violance district" },
+        Url      = "https://raw.githubusercontent.com/tigergenz/SpectreMain/refs/heads/main/Games/ViolenceDistrict.lua",
+    },
+    ["Thai Word Chain"] = {
+        Places = { 101001957765810 },
+        Games  = { 10768827250 },
+        Patterns = { "thai word chain", "ต่อคำศัพท์ภาษาไทย", "ต่อคำ", "word chain" },
+        Url      = "https://raw.githubusercontent.com/tigergenz/SpectreMain/refs/heads/main/THWC.lua",
+    },
+
 }
 
 -- =========================================================================
